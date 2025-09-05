@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 const SECRET = process.env.TOKEN_SECRET;
 
 function authMiddleware(req, res, next) {
-    const token = req.headers['authorization'];
+    let token = req.headers['authorization'] || req.headers['Authorization'];
+    if (token && (token.startsWith('Bearer ') || token.startsWith('bearer '))) {
+        token = token.split(' ')[1];
+    }
     if (!token) {
         return res.status(401).json({ error: 'No autorizado' });
     }

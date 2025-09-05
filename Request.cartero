@@ -1,0 +1,14 @@
+version = 1
+url = "{{HOST}}/private"
+method = "GET"
+
+[headers]
+
+[variables]
+HOST = "http://localhost:3004"
+
+[authorization]
+type = "bearer"
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEyMywibm9tYnJlIjoiUGF1bG8iLCJpYXQiOjE3NTcwNDc2ODF9.d6HFXD-8e6mzy13UrQSzfYPMC86LSv9Bwhxs1M7j9wU"
+
+[inactive-params]

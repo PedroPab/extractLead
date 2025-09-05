@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.TOKEN_SECRET || 'mi-clave-secreta';
+const SECRET = process.env.TOKEN_SECRET;
+
 
 // Recibe el JSON como argumento en línea de comandos (soporta espacios)
 const [, , ...args] = process.argv;
