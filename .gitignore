@@ -9,4 +9,4 @@ build/
 coverage/
 .env.local
 .env.*.local
-.temp/
+temp/
