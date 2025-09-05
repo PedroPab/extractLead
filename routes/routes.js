@@ -1,8 +1,7 @@
 
 import express from 'express';
 import { authMiddleware } from '../auth.js';
-import { findGuides } from './findGuides.js';
-
+import { startFindGuides, getJobStatus, downloadJobFile, listAllJobs } from "./findGuides.js";
 const router = express.Router();
 
 router.get('/public', (req, res) => {
@@ -13,11 +12,20 @@ router.get('/private', authMiddleware, (req, res) => {
     res.json({ mensaje: 'Este endpoint es privado y autenticado.' });
 });
 
-router.get('/', (req, res) => {
+// health para saber que el server sigue vivo
+router.get("/health", (_req, res) => res.send("ok"));
 
-    res.json({ mensaje: 'Ruta de prueba funcionando.' });
-});
+// inicia export sin bloquear
+router.get("/export", startFindGuides);            // ?stardate=YYYY-MM-DD HH:mm:ss&enddate=...
 
-router.get('/guides', findGuides);
+// mostrart todos los jobs (debug)
+router.get("/jobs", listAllJobs);
+
+// consulta de estado/logs
+router.get("/jobs/:id", getJobStatus);
+
+// descarga cuando esté listo
+router.get("/jobs/:id/download", downloadJobFile);
+
 
 export default router;
