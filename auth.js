@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 const SECRET = process.env.TOKEN_SECRET;
 
-function authMiddleware(req, res, next) {
+export function authMiddleware(req, res, next) {
     let token = req.headers['authorization'] || req.headers['Authorization'];
     if (token && (token.startsWith('Bearer ') || token.startsWith('bearer '))) {
         token = token.split(' ')[1];
@@ -17,5 +17,3 @@ function authMiddleware(req, res, next) {
         next();
     });
 }
-
-module.exports = { authMiddleware };

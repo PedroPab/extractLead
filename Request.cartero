@@ -1,5 +1,5 @@
 version = 1
-url = "{{HOST}}/private"
+url = "{{HOST}}/guides?stardate=hola&enddate=adios"
 method = "GET"
 
 [headers]

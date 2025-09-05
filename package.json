@@ -1,12 +1,13 @@
 {
+  "type": "module",
   "name": "extractlead",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "dev": "node --env-file=.env --watch app.js",
-  "start": "node --env-file=.env app.js",
-  "token": "node --env-file=.env generateToken.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --env-file=.env --watch app.js",
+    "start": "node --env-file=.env app.js",
+    "token": "node --env-file=.env generateToken.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
   "dependencies": {
     "crypto": "^1.0.1",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "playwright": "^1.55.0"
   }
 }
