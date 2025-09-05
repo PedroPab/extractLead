@@ -1,0 +1,12 @@
+# Archivos y carpetas a ignorar para Node.js
+node_modules/
+.env
+npm-debug.log
+dist/
+build/
+.DS_Store
+*.log
+coverage/
+.env.local
+.env.*.local
+.temp/
