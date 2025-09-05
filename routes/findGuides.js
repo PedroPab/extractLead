@@ -7,7 +7,7 @@ const jobs = new Map();
 
 /** Inicia el job sin bloquear: retorna 202 + jobId */
 export const startFindGuides = (req, res) => {
-    const { stardate, enddate } = req.query; // (mantengo tus nombres)
+    const { stardate, enddate, storeName } = req.query; // (mantengo tus nombres)
 
     // Resolver fechas (si no llegan, último mes)
     const now = new Date();
@@ -22,14 +22,18 @@ export const startFindGuides = (req, res) => {
     // responder de inmediato (no bloquea)
     res.status(202).json({ jobId: id, status: job.status });
 
+    //escojermos la tienda
+    const { username, password } = escojerTienda(storeName);
+
     // correr en background
     (async () => {
         job.status = "running";
         job.logs.push("Iniciando export…");
 
         const exporter = new EffiExporter({
-            username: process.env.EFFI_USER,
-            password: process.env.EFFI_PASS,
+            username: username,
+            password: password,
+            storeName: storeName,
             headless: true,
             onProgress: (msg) => job.logs.push(`[${new Date().toISOString()}] ${msg}`),
         });
@@ -68,3 +72,43 @@ export const downloadJobFile = (req, res) => {
 export const listAllJobs = (_req, res) => {
     res.json(Array.from(jobs.values()));
 };
+
+
+function escojerTienda(storeName) {
+    // Buscar tiendas por variables *_USERNAME y *_PASSWORD
+    const tiendas = [];
+    for (const [key, value] of Object.entries(process.env)) {
+        const match = key.match(/^EFFI_STORE_(.+)_USERNAME$/);
+        if (match) {
+            const name = match[1];
+            const username = value;
+            const password = process.env[`EFFI_STORE_${name}_PASSWORD`];
+            if (password) {
+                tiendas.push({ name, username, password });
+            }
+        }
+    }
+
+    if (tiendas.length === 0) {
+        throw new Error("No hay tiendas configuradas en las variables de entorno (EFFI_STORE_*_USERNAME y EFFI_STORE_*_PASSWORD)");
+    }
+
+    let tiendaSeleccionada;
+    if (storeName) {
+        tiendaSeleccionada = tiendas.find(t => t.name.toLowerCase() === storeName.toLowerCase());
+        if (!tiendaSeleccionada) {
+            throw new Error(`No se encontró la tienda con nombre '${storeName}'. Tiendas disponibles: ${tiendas.map(t => t.name).join(", ")}`);
+        }
+    } else {
+        if (tiendas.length > 1) {
+            throw new Error(`Hay varias tiendas configuradas. Debes especificar cuál usar con el parámetro 'storeName'. Tiendas disponibles: ${tiendas.map(t => t.name).join(", ")}`);
+        }
+        tiendaSeleccionada = tiendas[0];
+    }
+
+    if (!tiendaSeleccionada.username || !tiendaSeleccionada.password) {
+        throw new Error(`La tienda '${tiendaSeleccionada.name}' no tiene usuario o contraseña configurados correctamente.`);
+    }
+
+    return tiendaSeleccionada;
+}

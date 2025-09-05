@@ -27,5 +27,8 @@ router.get("/jobs/:id", getJobStatus);
 // descarga cuando esté listo
 router.get("/jobs/:id/download", downloadJobFile);
 
+//hacer publica la carpeta temp
+router.use('/temp', express.static('temp'));
+
 
 export default router;

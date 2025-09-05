@@ -1,5 +1,5 @@
 version = 1
-url = "{{HOST}}/guides?stardate=hola&enddate=adios"
+url = "{{HOST}}/export"
 method = "GET"
 
 [headers]
@@ -12,3 +12,5 @@ type = "bearer"
 token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEyMywibm9tYnJlIjoiUGF1bG8iLCJpYXQiOjE3NTcwNDc2ODF9.d6HFXD-8e6mzy13UrQSzfYPMC86LSv9Bwhxs1M7j9wU"
 
 [inactive-params]
+enddate = "adios"
+stardate = "hola"

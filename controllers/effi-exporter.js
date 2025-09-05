@@ -4,7 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 export default class EffiExporter {
-    constructor({ username, password, baseUrl = "https://effi.com.co", headless = true, onProgress } = {}) {
+    constructor({ storeName, username, password, baseUrl = "https://effi.com.co", headless = true, onProgress } = {}) {
+        this.storeName = storeName;
         this.username = username;
         this.password = password;
         this.baseUrl = baseUrl.replace(/\/$/, "");
@@ -100,7 +101,7 @@ export default class EffiExporter {
                 modalBtn.click(),
             ]);
 
-            const suggested = (await download.suggestedFilename())?.trim() || `guias_transporte_${Date.now()}.xlsx`;
+            const suggested = `${this.storeName}_guias_transporte_${Date.now()}.xlsx`;
             const outPath = path.join(this.tempDir, suggested);
             this._progress(`Guardando archivo en ${outPath}…`);
             await download.saveAs(outPath);
