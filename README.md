@@ -64,6 +64,91 @@ Puedes definir varias tiendas cambiando `NOMBRE` por el identificador de cada ti
 
 La función `escojerTienda(storeName)` busca todas las variables de entorno que sigan el patrón anterior y agrupa usuario y contraseña por tienda. Si hay más de una tienda, debes especificar el parámetro `storeName` en la consulta. Si solo hay una, se selecciona automáticamente.
 
+## Docker Usage
+
+### Quick Start with Docker
+
+The easiest way to run extractLead is using Docker:
+
+```bash
+# Build and run with docker-compose
+docker compose up --build
+
+# Or run directly with Docker
+docker build -t extractlead .
+docker run -d -p 3004:3004 -e PORT=3004 -e TOKEN_SECRET=your-secret --name extractlead extractlead
+```
+
+### Environment Variables for Docker
+
+When running with Docker, you can set environment variables in several ways:
+
+1. **Using .env file** (recommended for local development):
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   docker compose up
+   ```
+
+2. **Using environment variables directly**:
+   ```bash
+   docker run -d -p 3004:3004 \
+     -e PORT=3004 \
+     -e TOKEN_SECRET=your-secret \
+     -e EFFI_STORE_ZILONIX_USERNAME=user@example.com \
+     -e EFFI_STORE_ZILONIX_PASSWORD=password123 \
+     --name extractlead extractlead
+   ```
+
+3. **Using docker-compose with environment file**:
+   ```yaml
+   services:
+     extractlead:
+       build: .
+       environment:
+         - PORT=3004
+         - TOKEN_SECRET=your-secret
+         - EFFI_STORE_ZILONIX_USERNAME=user@example.com
+         - EFFI_STORE_ZILONIX_PASSWORD=password123
+   ```
+
+### Docker Health Check
+
+The Docker image includes a health check that monitors the `/health` endpoint:
+
+```bash
+# Check container health
+docker ps
+# or
+docker inspect extractlead --format='{{.State.Health.Status}}'
+```
+
+### GitHub Container Registry
+
+This project is automatically published to GitHub Container Registry (GHCR) when changes are pushed to the main branch. You can pull and run the pre-built image:
+
+```bash
+# Pull from GitHub Container Registry
+docker pull ghcr.io/pedropab/extractlead:latest
+
+# Run the pre-built image
+docker run -d -p 3004:3004 --env-file .env ghcr.io/pedropab/extractlead:latest
+```
+
+### Available Images and Tags
+
+- `ghcr.io/pedropab/extractlead:latest` - Latest stable version from main branch
+- `ghcr.io/pedropab/extractlead:v1.0.0` - Specific version tags (when using semantic versioning)
+
+### Docker Best Practices Implemented
+
+- ✅ Multi-stage build optimization
+- ✅ Non-root user for security
+- ✅ Health checks for container monitoring
+- ✅ Proper .dockerignore for smaller build context
+- ✅ Environment variable configuration
+- ✅ Automatic publishing to GitHub Container Registry
+
 ## Uso
 
 1. Instala las dependencias:

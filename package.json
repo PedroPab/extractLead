@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
   "dev": "node --env-file=.env --watch app.js",
-  "start": "node --env-file=.env app.js",
+  "start": "node app.js",
+  "start:dev": "node --env-file=.env app.js",
   "build": "echo 'No build step needed for pure Node.js, add transpile step here if needed'",
   "clean": "rm -rf dist",
   "token": "node --env-file=.env generateToken.js",
@@ -16,7 +17,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "crypto": "^1.0.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "playwright": "^1.55.0"

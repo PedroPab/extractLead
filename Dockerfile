@@ -1,20 +1,38 @@
-# Imagen base oficial de Node.js (alpine es ligera)
+# Use Node.js official image
 FROM node:20-alpine
 
-# Directorio de trabajo
+# Install system dependencies
+RUN apk add --no-cache wget
+
+# Set environment for Playwright
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Create app directory
 WORKDIR /app
 
-# Copiar solo package.json y package-lock.json para instalar dependencias primero (mejor cache)
+# Copy package files for dependency installation (better caching)
 COPY package*.json ./
 
-# Instalar solo dependencias de producción
-RUN npm ci --omit=dev
+# Install dependencies
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Copiar el resto del código
+# Copy application code
 COPY . .
 
-# Exponer el puerto (ajusta si usas otro)
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 && \
+    chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
 EXPOSE 3004
 
-# Comando por defecto
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3004/health || exit 1
+
+# Start the application
 CMD ["npm", "run", "start"]
