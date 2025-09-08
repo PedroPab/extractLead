@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  extractlead:
+    build: .
+    container_name: extractlead
+    ports:
+      - "3004:3004"
+    env_file:
+      - .env
+    volumes:
+      - ./temp:/app/temp
+    restart: unless-stopped
