@@ -9,6 +9,8 @@
   "build": "docker build -t extractlead .",
   "clean": "rm -rf dist",
   "token": "node --env-file=.env generateToken.js",
+  "tag": "docker tag extractlead:latest ghcr.io/pedropab/extractlead:latest",
+  "push" : "docker push ghcr.io/pedropab/extractlead:latest",
   "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

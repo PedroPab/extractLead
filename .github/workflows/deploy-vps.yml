@@ -1,0 +1,50 @@
+name: Deploy to VPS
+
+on:
+  # ➊ Se dispara cuando el workflow de build terminó OK
+  workflow_run:
+    workflows: ["Build & Publish Docker image to GHCR"]
+    types: [completed]
+
+  # ➋ También lo puedes lanzar manualmente
+  workflow_dispatch:
+
+# Solo seguimos si el build tuvo éxito
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy over SSH
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        port: ${{ secrets.VPS_PORT }}
+
+        # ⚠️ Reemplaza /var/www/mi-app por tu ruta
+        script: |
+          set -e                                  # abortar ante cualquier error
+
+          #echo "→ Login a GHCR"
+          #echo "${{ secrets.GHCR_TOKEN }}" | \
+          #  docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
+
+          echo "→ Ir al directorio del proyecto"
+          cd /root/botLeifer
+
+          echo "→ Traer la imagen más reciente"
+          docker compose pull
+
+          echo "→ Bajar stack actual"
+          docker compose down
+
+          echo "→ Levantar de nuevo"
+          docker compose up -d
+
+          #echo "→ Limpieza opcional"
+          #docker system prune -f

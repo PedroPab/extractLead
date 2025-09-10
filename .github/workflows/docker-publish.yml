@@ -1,30 +1,64 @@
-name: Build and Publish Docker image
+name: Build & Publish Docker image to GHCR
 
 on:
   push:
-    branches:
-      - master
+    branches: [ main ]          # publica en cada push a main
+  workflow_dispatch:            # permite dispararlo manualmente
+
+# 👇 ESTA SECCIÓN ES CLAVE
+permissions:
+  contents: read        # clonar repo
+  packages: write       # publicar a GHCR
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}      # owner/repo
+  # Variante lower-case (por si tu user/repo contiene mayúsculas)
+  IMAGE_LC: ${{ github.repository }}        # se convierte en el job
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+    - name: Set lower-case image name
+      id: prep
+      run: |
+        img="${IMAGE_NAME,,}"          # bash lower-case
+        echo "name=${img}" >> "$GITHUB_OUTPUT"
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up QEMU (multi-arch opcional)
+      uses: docker/setup-qemu-action@v3
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        # GITHUB_TOKEN ya trae permisos write:packages :contentReference[oaicite:0]{index=0}
+
+    - name: Extract metadata (labels & tags)
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ steps.prep.outputs.name }}
+        tags: |
+          type=raw,value=latest
+          type=sha,prefix=,format=short       # ej. f6c91ab
+
+    - name: Build & push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        # Si necesitas varias plataformas, añade:
+        # platforms: linux/amd64,linux/arm64
