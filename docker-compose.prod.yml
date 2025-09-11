@@ -1,0 +1,11 @@
+services:
+  extractlead:
+    image: ghcr.io/pedropab/extractlead:latest
+    container_name: extractlead
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    volumes:
+      - ./temp:/app/temp
+    restart: unless-stopped

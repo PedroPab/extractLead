@@ -2,7 +2,7 @@ name: Build & Publish Docker image to GHCR
 
 on:
   push:
-    branches: [ main ]          # publica en cada push a main
+    branches: [ master ]          # publica en cada push a main
   workflow_dispatch:            # permite dispararlo manualmente
 
 # 👇 ESTA SECCIÓN ES CLAVE

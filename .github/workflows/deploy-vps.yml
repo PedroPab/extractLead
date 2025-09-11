@@ -35,7 +35,7 @@ jobs:
           #  docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
 
           echo "→ Ir al directorio del proyecto"
-          cd /root/botLeifer
+          cd /root/extractLead
 
           echo "→ Traer la imagen más reciente"
           docker compose pull
