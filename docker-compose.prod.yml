@@ -8,4 +8,5 @@ services:
       - .env
     volumes:
       - ./temp:/app/temp
+        - .env:/app/.env
     restart: unless-stopped

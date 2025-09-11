@@ -17,8 +17,11 @@ COPY . .
 RUN mkdir -p /app/temp
 VOLUME ["/app/temp"]
 
-# Exponer el puerto (ajusta si usas otro)
-EXPOSE 3004
+
+# Exponer el puerto definido por la variable de entorno PORT (por defecto 3004)
+ARG PORT=3004
+ENV PORT=${PORT}
+EXPOSE ${PORT}
 
 # Comando por defecto
 CMD ["npm", "run", "start"]
