@@ -1,4 +1,6 @@
-const jwt = require('jsonwebtoken');
+
+import pkg from 'jsonwebtoken';
+const { sign } = pkg;
 const SECRET = process.env.TOKEN_SECRET;
 
 
@@ -18,5 +20,5 @@ try {
     process.exit(1);
 }
 
-const token = jwt.sign(payload, SECRET);
+const token = sign(payload, SECRET);
 console.log(token);

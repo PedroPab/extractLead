@@ -1,14 +1,17 @@
 # Imagen base oficial de Node.js (alpine es ligera)
-FROM node:20-alpine
-
+FROM node:20
 # Directorio de trabajo
 WORKDIR /app
 
 # Copiar solo package.json y package-lock.json para instalar dependencias primero (mejor cache)
 COPY package*.json ./
 
+
 # Instalar solo dependencias de producción
 RUN npm ci --omit=dev
+
+# Instalar navegadores de Playwright
+RUN npx playwright install --with-deps
 
 # Copiar el resto del código, excluyendo archivos .env
 COPY . .

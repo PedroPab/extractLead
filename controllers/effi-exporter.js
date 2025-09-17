@@ -65,6 +65,8 @@ export default class EffiExporter {
      * Descarga Excel: clic en "Exportar a Excel" -> aparece modal -> clic en confirmar (descarga)
      */
     async exportGuiasTransporte(desde, hasta) {
+        console.log("🚀 ~ EffiExporter ~ exportGuiasTransporte ~ desde, hasta:", desde, hasta)
+        console.log(this.storeName, this.username);
         await this._start();
         try {
             await this._login();
