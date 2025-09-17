@@ -1,3 +1,4 @@
+import ExcelJS from "exceljs";
 // controllers/findGuides.controller.js
 import { randomUUID } from "crypto";
 import EffiExporter from "../controllers/effi-exporter.js";
@@ -58,14 +59,41 @@ export const getJobStatus = (req, res) => {
     res.json(job);
 };
 
-/** (Opcional) Descargar el archivo cuando termine */
+
+/** Descargar el archivo XLSX o su versión JSON */
 export const downloadJobFile = (req, res) => {
     const job = jobs.get(req.params.id);
     if (!job) return res.status(404).json({ error: "job not found" });
     if (job.status !== "done" || !job.result?.filePath) {
         return res.status(409).json({ error: "job not finished" });
     }
-    res.download(job.result.filePath);
+    // Si el usuario solicita ?format=json, convertir y enviar el JSON
+    if (req.query.format === "json") {
+        const workbook = new ExcelJS.Workbook();
+        workbook.xlsx.readFile(job.result.filePath)
+            .then(() => {
+                const worksheet = workbook.worksheets[0];
+                const data = [];
+                worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+                    if (rowNumber === 1) {
+                        // Guardar encabezados
+                        data.headers = row.values.slice(1);
+                    } else {
+                        const obj = {};
+                        row.values.slice(1).forEach((val, idx) => {
+                            obj[data.headers[idx]] = val;
+                        });
+                        data.push(obj);
+                    }
+                });
+                res.json(data);
+            })
+            .catch(err => {
+                res.status(500).json({ error: "Error al convertir a JSON", details: err.message });
+            });
+    } else {
+        res.download(job.result.filePath);
+    }
 };
 
 // mostrart todos los jobs (debug)
