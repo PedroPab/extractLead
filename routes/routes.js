@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { authMiddleware } from '../auth.js';
-import { startFindGuides, getJobStatus, downloadJobFile, listAllJobs } from "./findGuides.js";
+import { startFindGuides, getJobStatus, downloadJobFile, listAllJobs, getGuides, getCacheStats } from "./findGuides.js";
 const router = express.Router();
 
 router.get('/public', (req, res) => {
@@ -30,5 +30,8 @@ router.get("/jobs/:id/download", downloadJobFile);
 //hacer publica la carpeta temp
 router.use('/temp', express.static('temp'));
 
+// API de guías (consultar caché como base de datos)
+router.get("/guides", getGuides);           // ?storeName=X&id=Y&desde=Z&hasta=W&page=1&limit=100
+router.get("/cache/stats", getCacheStats);  // estadísticas de la caché
 
 export default router;
