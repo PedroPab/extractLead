@@ -5,26 +5,109 @@ import path from 'node:path';
 // Cache de guías por tienda: { [storeName]: { data: [...], timestamp: Date } }
 const guidesCache = new Map();
 
+// Inicializar caché al arrancar el servidor
+initializeCacheFromDisk();
+
+/** Inicializar caché leyendo archivos válidos del disco */
+function initializeCacheFromDisk() {
+    try {
+        const cacheDir = path.resolve(process.cwd(), 'temp', 'cache');
+        if (!fs.existsSync(cacheDir)) {
+            fs.mkdirSync(cacheDir, { recursive: true });
+            return;
+        }
+
+        const files = fs.readdirSync(cacheDir);
+        const jsonFiles = files.filter(file => file.endsWith('.json'));
+        const now = Date.now();
+        const oneHour = 60 * 60 * 1000;
+
+        for (const file of jsonFiles) {
+            try {
+                // Extraer timestamp del nombre del archivo: storeName_timestamp.json
+                const match = file.match(/^(.+)_(\d+)\.json$/);
+                if (!match) continue;
+
+                const [, storeName, timestampStr] = match;
+                const timestamp = parseInt(timestampStr);
+
+                // Solo cargar archivos de la última hora
+                if (now - timestamp <= oneHour) {
+                    const filePath = path.join(cacheDir, file);
+                    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+                    // Solo usar si no hay datos más recientes para esta tienda
+                    const existing = guidesCache.get(storeName);
+                    if (!existing || existing.timestamp < timestamp) {
+                        guidesCache.set(storeName, { data, timestamp });
+                        console.log(`✅ Caché restaurada para ${storeName} desde ${file} (${data.length} guías)`);
+                    }
+                }
+            } catch (err) {
+                console.warn(`⚠️ Error al cargar archivo ${file}:`, err.message);
+            }
+        }
+
+        console.log(`🔄 Caché inicializada desde disco: ${guidesCache.size} tiendas`);
+    } catch (err) {
+        console.warn('⚠️ Error al inicializar caché desde disco:', err.message);
+    }
+}
+
 // Limpieza automática de la caché cada 10 minutos
 setInterval(() => {
     const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
     for (const [store, entry] of guidesCache.entries()) {
-        if (now - entry.timestamp > 60 * 60 * 1000) { // 1 hora
-            // Guardar en disco antes de borrar de memoria
-            try {
-                const outDir = path.resolve(process.cwd(), 'temp', 'cache');
-                if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-                const file = path.join(outDir, `${store}_${entry.timestamp}.json`);
-                fs.writeFileSync(file, JSON.stringify(entry.data, null, 2));
-            } catch { }
+        if (now - entry.timestamp > oneHour) {
+            // Los datos ya están guardados en disco desde addToCache()
             guidesCache.delete(store);
+            console.log(`🗑️ Caché expirada removida de memoria: ${store}`);
         }
+    }
+
+    // Limpiar archivos muy antiguos del disco (más de 24 horas)
+    try {
+        const cacheDir = path.resolve(process.cwd(), 'temp', 'cache');
+        if (fs.existsSync(cacheDir)) {
+            const files = fs.readdirSync(cacheDir);
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+
+            for (const file of files) {
+                if (file.endsWith('.json')) {
+                    const match = file.match(/^(.+)_(\d+)\.json$/);
+                    if (match) {
+                        const timestamp = parseInt(match[2]);
+                        if (now - timestamp > twentyFourHours) {
+                            fs.unlinkSync(path.join(cacheDir, file));
+                            console.log(`🗑️ Archivo antiguo eliminado: ${file}`);
+                        }
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('⚠️ Error al limpiar archivos antiguos:', err.message);
     }
 }, 10 * 60 * 1000);
 
 /** Agregar datos de guías a la caché */
 export const addToCache = (storeName, data) => {
-    guidesCache.set(storeName || 'default', { data, timestamp: Date.now() });
+    const timestamp = Date.now();
+    guidesCache.set(storeName || 'default', { data, timestamp });
+
+    // Guardar inmediatamente en disco para persistencia
+    try {
+        const cacheDir = path.resolve(process.cwd(), 'temp', 'cache');
+        if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+        const fileName = `${storeName || 'default'}_${timestamp}.json`;
+        const filePath = path.join(cacheDir, fileName);
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log(`💾 Datos guardados en disco: ${fileName} (${data.length} guías)`);
+    } catch (err) {
+        console.warn('⚠️ Error al guardar en disco:', err.message);
+    }
 };
 
 /** Obtener todas las guías de la caché con filtros avanzados */
