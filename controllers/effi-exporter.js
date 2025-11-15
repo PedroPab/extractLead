@@ -20,7 +20,12 @@ export default class EffiExporter {
         if (!fs.existsSync(this.tempDir)) fs.mkdirSync(this.tempDir, { recursive: true });
     }
 
-    _progress(msg) { try { this.onProgress?.(msg); } catch { } }
+    _progress(msg) {
+        try {
+            console.log(msg);
+            this.onProgress?.(msg);
+        } catch { }
+    }
 
     async _start() {
         this.browser = await chromium.launch({ headless: this.headless });
@@ -86,6 +91,17 @@ export default class EffiExporter {
             await exportBtn.waitFor({ state: "visible", timeout: 30_000 });
             this._progress("Clic en 'Exportar a Excel' (abre modal) …");
             await exportBtn.click();
+
+            //activar los checkboxes
+            //desde el c8 hasta el c84
+            const columnas = []
+            for (let i = 8; i <= 84; i++) {
+                columnas.push(`c${i}`);
+            }
+
+            for (const col of columnas) {
+                await this.page.check(`input[type="checkbox"][value="${col}"]`);
+            }
 
             // PASO 2: confirmar en la modal y AHÍ esperar el download
             const modalBtn = this.page.locator("#btnValidarExcel")
